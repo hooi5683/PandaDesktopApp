@@ -9,6 +9,11 @@
         Topmost="True"
         ShowInTaskbar="False">
     <Canvas Name="MainCanvas" Background="Transparent">
-        <Image Name="PandaImage" Width="100" Height="100" Canvas.Left="0" Canvas.Top="100"/>
-    </Canvas>
+        <Canvas.ContextMenu>
+            <ContextMenu>
+                <MenuItem Header="Exit" Click="ExitMenuItem_Click"/>
+            </ContextMenu>
+        </Canvas.ContextMenu>
+        <Image Name="PandaImage" Width="64" Height="64" Canvas.Left="0" Canvas.Top="0"/>        
+    </Canvas>    
 </Window>
