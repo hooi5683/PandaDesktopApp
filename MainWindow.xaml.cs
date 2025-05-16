@@ -44,7 +44,7 @@ namespace PandaDesktopApp
             PandaImage.MouseMove += PandaImage_MouseMove;
             PandaImage.MouseLeftButtonUp += PandaImage_MouseLeftButtonUp;
 
-            moveTimer.Interval = TimeSpan.FromMilliseconds(30);
+            moveTimer.Interval = TimeSpan.FromMilliseconds(300);
             moveTimer.Tick += MoveTimer_Tick;
             moveTimer.Start();
         }
@@ -66,8 +66,8 @@ namespace PandaDesktopApp
         private void RandomStartingPoint()
         {
             var random = new Random();
-            double x = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenWidth - 128));
-            double y = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenHeight - 128));
+            double x = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenWidth - 64));
+            double y = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenHeight - 64));
             pandaX = x;
             pandaY = y;
             movingRight = random.Next(0, 2) == 0; // Randomly choose direction
@@ -122,7 +122,7 @@ namespace PandaDesktopApp
 
             if (movingRight)
             {
-                pandaX += 2;
+                pandaX += 5;
                 if (pandaX > screenWidth - pandaWidth)
                 {
                     movingRight = false;
@@ -131,7 +131,7 @@ namespace PandaDesktopApp
             }
             else
             {
-                pandaX -= 2;
+                pandaX -= 5;
                 if (pandaX < 0)
                 {
                     movingRight = true;
