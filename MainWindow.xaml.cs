@@ -18,17 +18,23 @@ namespace PandaDesktopApp
         bool movingRight = true;
         private bool isDragging = false;
         private Point mouseOffset;
+        string gifPathLeft = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_walk_left.gif");
+        string gifPathRight = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_walk_right.gif");
+        BitmapImage imageWalkLeft = new BitmapImage();
+        BitmapImage imageWalkRight = new BitmapImage();
 
         public MainWindow()
         {
             InitializeComponent();
+            imageWalkLeft.BeginInit();
+            imageWalkLeft.UriSource = new Uri(gifPathLeft);
+            imageWalkLeft.EndInit();
 
-            var gifPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_walk.gif");
-            var image = new BitmapImage();
-            image.BeginInit();
-            image.UriSource = new Uri(gifPath);
-            image.EndInit();            
-            ImageBehavior.SetAnimatedSource(PandaImage, image);
+            imageWalkRight.BeginInit();
+            imageWalkRight.UriSource = new Uri(gifPathRight);
+            imageWalkRight.EndInit();
+
+                        
             RandomStartingPoint();
             Canvas.SetTop(PandaImage, pandaY);
             Loaded += MainWindow_Loaded;
@@ -43,13 +49,29 @@ namespace PandaDesktopApp
             moveTimer.Start();
         }
 
+        private void SetPandaImage()
+        {
+            if(movingRight)
+            {
+                PandaImage.Source = imageWalkRight;
+                ImageBehavior.SetAnimatedSource(PandaImage, imageWalkRight);
+            }
+            else
+            {
+                PandaImage.Source = imageWalkLeft;
+                ImageBehavior.SetAnimatedSource(PandaImage, imageWalkLeft);
+            }
+        }
+
         private void RandomStartingPoint()
         {
             var random = new Random();
-            double x = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenWidth - 200));
-            double y = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenHeight - 200));
+            double x = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenWidth - 128));
+            double y = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenHeight - 128));
             pandaX = x;
             pandaY = y;
+            movingRight = random.Next(0, 2) == 0; // Randomly choose direction
+            SetPandaImage();
         }
 
         // Add these event handlers to your MainWindow class
@@ -80,6 +102,9 @@ namespace PandaDesktopApp
             {
                 isDragging = false;
                 PandaImage.ReleaseMouseCapture();
+                var random = new Random();                
+                movingRight = random.Next(0, 2) == 0; // Randomly choose direction
+                SetPandaImage();
                 moveTimer.Start(); // Resume automatic movement
             }
         }
@@ -98,12 +123,20 @@ namespace PandaDesktopApp
             if (movingRight)
             {
                 pandaX += 2;
-                if (pandaX > screenWidth - pandaWidth) movingRight = false;
+                if (pandaX > screenWidth - pandaWidth)
+                {
+                    movingRight = false;
+                    SetPandaImage();
+                }
             }
             else
             {
                 pandaX -= 2;
-                if (pandaX < 0) movingRight = true;
+                if (pandaX < 0)
+                {
+                    movingRight = true;
+                    SetPandaImage();
+                }
             }
             Canvas.SetLeft(PandaImage, pandaX);
         }
@@ -141,5 +174,10 @@ namespace PandaDesktopApp
         [DllImport("user32.dll")]
         static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
         #endregion
+
+        private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
     }
 }
