@@ -1,0 +1,14 @@
+﻿<Window x:Class="PandaDesktopApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Panda"
+        Width="400" Height="400"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False">
+    <Canvas Name="MainCanvas" Background="Transparent">
+        <Image Name="PandaImage" Width="100" Height="100" Canvas.Left="0" Canvas.Top="100"/>
+    </Canvas>
+</Window>
