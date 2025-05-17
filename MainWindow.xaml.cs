@@ -68,6 +68,7 @@ namespace PandaDesktopApp
             ImageBehavior.SetAnimatedSource(PandaImage, imageWalkStand);
 
             RandomStartingPoint();
+            pandaY = TaskbarHelper.GetTaskbarY()-50;
             RandomDirection();
             Canvas.SetTop(PandaImage, pandaY);
             Loaded += MainWindow_Loaded;
@@ -164,7 +165,7 @@ namespace PandaDesktopApp
             
             if (currentDirection == Direction.Stand)
             {
-                directionTimer.Interval = TimeSpan.FromSeconds((new Random()).Next(1, 5));
+                directionTimer.Interval = TimeSpan.FromSeconds((new Random()).Next(2, 5));
             }
             else if (currentDirection == Direction.Front || currentDirection == Direction.Back)
             {
@@ -179,8 +180,8 @@ namespace PandaDesktopApp
         private void RandomStartingPoint()
         {
             var random = new Random();
-            double x = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenWidth - 64));
-            double y = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenHeight - 64));
+            double x = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenWidth - 100));
+            double y = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenHeight - 100));
             pandaX = x;
             pandaY = y;
         }
