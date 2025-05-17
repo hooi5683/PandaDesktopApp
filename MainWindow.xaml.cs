@@ -9,19 +9,37 @@ using System.Windows.Threading;
 using WpfAnimatedGif;
 
 namespace PandaDesktopApp
-{
+{    
     public partial class MainWindow : Window
     {
+        enum Direction
+        {
+            Left,
+            Right,
+            Back,
+            Front,
+            Stand
+        }
         DispatcherTimer moveTimer = new DispatcherTimer();
+        DispatcherTimer directionTimer = new DispatcherTimer();
+
         double pandaX = 0;
         double pandaY = 0;
-        bool movingRight = true;
+        
+        private Direction currentDirection = Direction.Stand;
         private bool isDragging = false;
         private Point mouseOffset;
+        string gifPathStand = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_walk_stand.gif");
         string gifPathLeft = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_walk_left.gif");
         string gifPathRight = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_walk_right.gif");
+        string gifPathFront = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_walk_front.gif");
+        string gifPathBack = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_walk_back.gif");
+
         BitmapImage imageWalkLeft = new BitmapImage();
         BitmapImage imageWalkRight = new BitmapImage();
+        BitmapImage imageWalkStand = new BitmapImage();
+        BitmapImage imageWalkFront = new BitmapImage();
+        BitmapImage imageWalkBack = new BitmapImage();
 
         public MainWindow()
         {
@@ -34,8 +52,23 @@ namespace PandaDesktopApp
             imageWalkRight.UriSource = new Uri(gifPathRight);
             imageWalkRight.EndInit();
 
-                        
+            imageWalkFront.BeginInit();
+            imageWalkFront.UriSource = new Uri(gifPathFront);
+            imageWalkFront.EndInit();
+
+            imageWalkBack.BeginInit();
+            imageWalkBack.UriSource = new Uri(gifPathBack);
+            imageWalkBack.EndInit();
+
+            imageWalkStand.BeginInit();
+            imageWalkStand.UriSource = new Uri(gifPathStand);
+            imageWalkStand.EndInit();
+
+            PandaImage.Source = imageWalkStand;
+            ImageBehavior.SetAnimatedSource(PandaImage, imageWalkStand);
+
             RandomStartingPoint();
+            RandomDirection();
             Canvas.SetTop(PandaImage, pandaY);
             Loaded += MainWindow_Loaded;
 
@@ -44,22 +77,102 @@ namespace PandaDesktopApp
             PandaImage.MouseMove += PandaImage_MouseMove;
             PandaImage.MouseLeftButtonUp += PandaImage_MouseLeftButtonUp;
 
-            moveTimer.Interval = TimeSpan.FromMilliseconds(300);
+            moveTimer.Interval = TimeSpan.FromMilliseconds(250);
             moveTimer.Tick += MoveTimer_Tick;
             moveTimer.Start();
+
+            directionTimer.Interval =  TimeSpan.FromSeconds((new Random()).Next(5,30));
+            directionTimer.Tick += (s, e) =>
+            {                
+                RandomDirection();                
+            };
+            directionTimer.Start();
         }
 
-        private void SetPandaImage()
+        private void WalkStand()
         {
-            if(movingRight)
+            if(currentDirection != Direction.Stand)
             {
+                currentDirection = Direction.Stand;
+                PandaImage.Source = imageWalkStand;
+                ImageBehavior.SetAnimatedSource(PandaImage, imageWalkStand);
+            }            
+        }
+
+        private void WalkLeft()
+        {
+            if (currentDirection != Direction.Left)
+            {
+                currentDirection = Direction.Left;
+                PandaImage.Source = imageWalkLeft;
+                ImageBehavior.SetAnimatedSource(PandaImage, imageWalkLeft);
+            }            
+        }
+
+        private void WalkRight()
+        {
+            if (currentDirection != Direction.Right)
+            {
+                currentDirection = Direction.Right;
                 PandaImage.Source = imageWalkRight;
                 ImageBehavior.SetAnimatedSource(PandaImage, imageWalkRight);
+            }            
+        }
+
+        private void WalkFront()
+        {
+            if(currentDirection != Direction.Front)
+            {
+                currentDirection = Direction.Front;
+                PandaImage.Source = imageWalkFront;
+                ImageBehavior.SetAnimatedSource(PandaImage, imageWalkFront);
+            }
+        }
+        private void WalkBack()
+        {
+            if (currentDirection != Direction.Back)
+            {
+                currentDirection = Direction.Back;
+                PandaImage.Source = imageWalkBack;
+                ImageBehavior.SetAnimatedSource(PandaImage, imageWalkBack);
+            }
+        }
+        private void RandomDirection()
+        {
+            var random = new Random();
+            int randomDirection = random.Next(0, 20);
+            if(randomDirection<=4)
+            {
+                WalkLeft();
+            }
+            else if (randomDirection >= 5 && randomDirection<=9)
+            {
+                WalkRight();
+            }
+            else if (randomDirection >= 10 && randomDirection <= 12)
+            {
+                WalkFront();
+            }
+            else if (randomDirection >= 13 && randomDirection <= 15)
+            {
+                WalkBack();
             }
             else
             {
-                PandaImage.Source = imageWalkLeft;
-                ImageBehavior.SetAnimatedSource(PandaImage, imageWalkLeft);
+                WalkStand();
+            }
+            
+            if (currentDirection == Direction.Stand)
+            {
+                directionTimer.Interval = TimeSpan.FromSeconds((new Random()).Next(1, 5));
+            }
+            else if (currentDirection == Direction.Front || currentDirection == Direction.Back)
+            {
+                directionTimer.Interval = TimeSpan.FromSeconds((new Random()).Next(2, 10));
+            }
+            else
+            {
+                directionTimer.Interval = TimeSpan.FromSeconds((new Random()).Next(20, 60));
             }
         }
 
@@ -70,8 +183,6 @@ namespace PandaDesktopApp
             double y = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenHeight - 64));
             pandaX = x;
             pandaY = y;
-            movingRight = random.Next(0, 2) == 0; // Randomly choose direction
-            SetPandaImage();
         }
 
         // Add these event handlers to your MainWindow class
@@ -79,6 +190,7 @@ namespace PandaDesktopApp
         {
             isDragging = true;
             moveTimer.Stop(); // Pause automatic movement
+            directionTimer.Stop(); // Pause random direction changes
             PandaImage.CaptureMouse();
             var mousePos = e.GetPosition(MainCanvas);
             mouseOffset = new Point(mousePos.X - pandaX, mousePos.Y - pandaY);
@@ -102,9 +214,8 @@ namespace PandaDesktopApp
             {
                 isDragging = false;
                 PandaImage.ReleaseMouseCapture();
-                var random = new Random();                
-                movingRight = random.Next(0, 2) == 0; // Randomly choose direction
-                SetPandaImage();
+                RandomDirection();
+                directionTimer.Start(); // Resume random direction changes
                 moveTimer.Start(); // Resume automatic movement
             }
         }
@@ -120,24 +231,23 @@ namespace PandaDesktopApp
             double screenWidth = SystemParameters.PrimaryScreenWidth;
             double pandaWidth = PandaImage.ActualWidth;
 
-            if (movingRight)
+            if (currentDirection== Direction.Right)
             {
                 pandaX += 5;
                 if (pandaX > screenWidth - pandaWidth)
                 {
-                    movingRight = false;
-                    SetPandaImage();
+                    WalkLeft();
                 }
             }
-            else
+            else if( currentDirection == Direction.Left)
             {
                 pandaX -= 5;
                 if (pandaX < 0)
                 {
-                    movingRight = true;
-                    SetPandaImage();
+                    WalkRight();
                 }
             }
+
             Canvas.SetLeft(PandaImage, pandaX);
         }
 
