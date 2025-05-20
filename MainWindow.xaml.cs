@@ -9,7 +9,7 @@ using System.Windows.Threading;
 using WpfAnimatedGif;
 
 namespace PandaDesktopApp
-{    
+{
     public partial class MainWindow : Window
     {
         enum Direction
@@ -18,14 +18,16 @@ namespace PandaDesktopApp
             Right,
             Back,
             Front,
-            Stand
+            Stand,
+            RollLeft,
+            RollRight
         }
         DispatcherTimer moveTimer = new DispatcherTimer();
         DispatcherTimer directionTimer = new DispatcherTimer();
 
         double pandaX = 0;
         double pandaY = 0;
-        
+
         private Direction currentDirection = Direction.Stand;
         private bool isDragging = false;
         private Point mouseOffset;
@@ -34,12 +36,16 @@ namespace PandaDesktopApp
         string gifPathRight = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_walk_right.gif");
         string gifPathFront = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_walk_front.gif");
         string gifPathBack = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_walk_back.gif");
+        string giftPathRollRight = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_roll_right.gif");
+        string giftPathRollLeft = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "panda_roll_left.gif");
 
         BitmapImage imageWalkLeft = new BitmapImage();
         BitmapImage imageWalkRight = new BitmapImage();
         BitmapImage imageWalkStand = new BitmapImage();
         BitmapImage imageWalkFront = new BitmapImage();
         BitmapImage imageWalkBack = new BitmapImage();
+        BitmapImage imagRollRight = new BitmapImage();
+        BitmapImage imagRollLeft = new BitmapImage();
 
         public MainWindow()
         {
@@ -64,11 +70,19 @@ namespace PandaDesktopApp
             imageWalkStand.UriSource = new Uri(gifPathStand);
             imageWalkStand.EndInit();
 
+            imagRollRight.BeginInit();
+            imagRollRight.UriSource = new Uri(giftPathRollRight);
+            imagRollRight.EndInit();
+
+            imagRollLeft.BeginInit();
+            imagRollLeft.UriSource = new Uri(giftPathRollLeft);
+            imagRollLeft.EndInit();
+
             PandaImage.Source = imageWalkStand;
             ImageBehavior.SetAnimatedSource(PandaImage, imageWalkStand);
 
             RandomStartingPoint();
-            pandaY = TaskbarHelper.GetTaskbarY()-50;
+            pandaY = TaskbarHelper.GetTaskbarY() - 40;
             RandomDirection();
             Canvas.SetTop(PandaImage, pandaY);
             Loaded += MainWindow_Loaded;
@@ -82,22 +96,39 @@ namespace PandaDesktopApp
             moveTimer.Tick += MoveTimer_Tick;
             moveTimer.Start();
 
-            directionTimer.Interval =  TimeSpan.FromSeconds((new Random()).Next(5,30));
+            directionTimer.Interval = TimeSpan.FromSeconds((new Random()).Next(5, 30));
             directionTimer.Tick += (s, e) =>
-            {                
-                RandomDirection();                
+            {
+                RandomDirection();
             };
             directionTimer.Start();
         }
-
+        private void RollLeft()
+        {
+            if (currentDirection != Direction.RollLeft)
+            {
+                currentDirection = Direction.RollLeft;
+                PandaImage.Source = imagRollLeft;
+                ImageBehavior.SetAnimatedSource(PandaImage, imagRollLeft);
+            }
+        }
+        private void RollRight()
+        {
+            if (currentDirection != Direction.RollRight)
+            {
+                currentDirection = Direction.RollRight;
+                PandaImage.Source = imagRollRight;
+                ImageBehavior.SetAnimatedSource(PandaImage, imagRollRight);
+            }
+        }
         private void WalkStand()
         {
-            if(currentDirection != Direction.Stand)
+            if (currentDirection != Direction.Stand)
             {
                 currentDirection = Direction.Stand;
                 PandaImage.Source = imageWalkStand;
                 ImageBehavior.SetAnimatedSource(PandaImage, imageWalkStand);
-            }            
+            }
         }
 
         private void WalkLeft()
@@ -107,7 +138,7 @@ namespace PandaDesktopApp
                 currentDirection = Direction.Left;
                 PandaImage.Source = imageWalkLeft;
                 ImageBehavior.SetAnimatedSource(PandaImage, imageWalkLeft);
-            }            
+            }
         }
 
         private void WalkRight()
@@ -117,12 +148,12 @@ namespace PandaDesktopApp
                 currentDirection = Direction.Right;
                 PandaImage.Source = imageWalkRight;
                 ImageBehavior.SetAnimatedSource(PandaImage, imageWalkRight);
-            }            
+            }
         }
 
         private void WalkFront()
         {
-            if(currentDirection != Direction.Front)
+            if (currentDirection != Direction.Front)
             {
                 currentDirection = Direction.Front;
                 PandaImage.Source = imageWalkFront;
@@ -141,12 +172,12 @@ namespace PandaDesktopApp
         private void RandomDirection()
         {
             var random = new Random();
-            int randomDirection = random.Next(0, 20);
-            if(randomDirection<=4)
+            int randomDirection = random.Next(0, 22);
+            if (randomDirection <= 4)
             {
                 WalkLeft();
             }
-            else if (randomDirection >= 5 && randomDirection<=9)
+            else if (randomDirection >= 5 && randomDirection <= 9)
             {
                 WalkRight();
             }
@@ -158,16 +189,24 @@ namespace PandaDesktopApp
             {
                 WalkBack();
             }
+            else if (randomDirection >= 16 && randomDirection <= 17)
+            {
+                RollLeft();
+            }
+            else if (randomDirection >= 18 && randomDirection <= 19)
+            {
+                RollRight();
+            }
             else
             {
                 WalkStand();
             }
-            
+
             if (currentDirection == Direction.Stand)
             {
                 directionTimer.Interval = TimeSpan.FromSeconds((new Random()).Next(2, 5));
             }
-            else if (currentDirection == Direction.Front || currentDirection == Direction.Back)
+            else if (currentDirection == Direction.Front || currentDirection == Direction.Back || currentDirection == Direction.RollLeft || currentDirection == Direction.RollRight)
             {
                 directionTimer.Interval = TimeSpan.FromSeconds((new Random()).Next(2, 10));
             }
@@ -180,8 +219,8 @@ namespace PandaDesktopApp
         private void RandomStartingPoint()
         {
             var random = new Random();
-            double x = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenWidth - 100));
-            double y = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenHeight - 100));
+            double x = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenWidth - 80));
+            double y = random.Next(0, Convert.ToInt16(SystemParameters.PrimaryScreenHeight - 80));
             pandaX = x;
             pandaY = y;
         }
@@ -200,7 +239,7 @@ namespace PandaDesktopApp
         private void PandaImage_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
             if (isDragging)
-            {
+            {                
                 var mousePos = e.GetPosition(MainCanvas);
                 pandaX = mousePos.X - mouseOffset.X;
                 pandaY = mousePos.Y - mouseOffset.Y;
@@ -248,6 +287,23 @@ namespace PandaDesktopApp
                     WalkRight();
                 }
             }
+            if (currentDirection == Direction.RollRight)
+            {
+                pandaX += 10;
+                if (pandaX > screenWidth - pandaWidth)
+                {
+                   RollLeft();
+                }
+            }
+            else if (currentDirection == Direction.RollLeft)
+            {
+                pandaX -= 10;
+                if (pandaX < 0)
+                {
+                    RollRight();
+                }
+            }
+
 
             Canvas.SetLeft(PandaImage, pandaX);
         }

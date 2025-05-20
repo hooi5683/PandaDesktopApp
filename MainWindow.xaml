@@ -14,6 +14,6 @@
                 <MenuItem Header="Exit" Click="ExitMenuItem_Click"/>
             </ContextMenu>
         </Canvas.ContextMenu>
-        <Image Name="PandaImage" Width="50" Height="50" Canvas.Left="0" Canvas.Top="0" RenderOptions.BitmapScalingMode="Fant"/>        
+        <Image Name="PandaImage" Width="40" Height="40" Canvas.Left="0" Canvas.Top="0" RenderOptions.BitmapScalingMode="Fant"/>        
     </Canvas>    
 </Window>

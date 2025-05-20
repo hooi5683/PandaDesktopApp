@@ -13,6 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Assets\panda_roll_left.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Assets\panda_roll_right.gif">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Assets\panda_walk_back.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
